@@ -42,25 +42,6 @@ cd Terraform-GKE
      ```bash
      export GOOGLE_APPLICATION_CREDENTIALS="/path/to/your/service-account-key.json"
      ```
-
-4. - create two bucket on GCS that will be used for the backend
-
-      ```bash
-      terraform {
-        backend "gcs" {
-          bucket  = var.gcs_bucket_name
-          prefix  = var.gcs_prefix        
-          region  = var.region           
-        }
-      }
-      ```
-      
-    - Change the name of the bucket, has to be unique
-      ```bash
-          env:
-            GCS_BUCKET_NAME: "k8s-bucket-gke" 
-            GCS_PREFIX: "terraform/state" 
-      ```
      
 ### 3. Configure Terraform
 
