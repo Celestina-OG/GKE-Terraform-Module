@@ -1,0 +1,17 @@
+*.tfstate
+*.tfstate.*
+*.tfplan
+crash.log
+.terraform/
+*.tfvars.json
+*.pem
+*.key
+*.crt
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+gcp_key.json
+gke_gcloud_auth_plugin_cache
+gke.config
+.terraform.lock.hcl

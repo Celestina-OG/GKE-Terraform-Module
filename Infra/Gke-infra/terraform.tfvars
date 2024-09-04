@@ -1,0 +1,14 @@
+region="us-east4"
+clusterName="gke-cluster"
+diskSize=50
+minNode=1
+maxNode=2
+machineType="e2-medium"
+env             = "dev"
+company         = "shortlet"
+private_subnet_cidr = "10.0.1.0/24"
+public_subnet_cidr  = "10.0.2.0/24"
+private_name = "private"
+public_name  = "public"
+network_name = ""
+credentials_path = "/tmp/gcp_key.json"

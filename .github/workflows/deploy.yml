@@ -1,0 +1,76 @@
+name: deploy to gke
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate with GCP
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          version: 'latest'
+
+      - name: Configure Docker to use gcloud
+        run: gcloud auth configure-docker
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build Docker image
+        run: docker build -t gcr.io/${{ secrets.GCP_PROJECT }}/time-api:latest .
+
+      - name: Push Docker image to GCR
+        run: docker push gcr.io/${{ secrets.GCP_PROJECT }}/time-api:latest
+
+      - name: Set up kubectl
+        run: |
+          gcloud components install gke-gcloud-auth-plugin
+          mkdir -p $HOME/.kube/ && touch $HOME/.kube/config
+          echo "${{ secrets.KUBECONFIG_DATA }}" | base64 --decode > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+
+      - name: Terraform Init
+        run: terraform init 
+        working-directory: ./Infra/kubernetes
+
+      - name: Terraform Apply
+        working-directory: ./Infra/kubernetes
+        env:
+          TF_VAR_project_id: ${{ secrets.GCP_PROJECT }}
+        run: terraform apply -auto-approve 
+  
+      - name: Retrieve Ingress IP or Hostname
+        id: get_ingress_ip
+        run: |
+          EXTERNAL_IP=$(kubectl get ingress api-ingress -n time-api -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+          echo "EXTERNAL_IP=$EXTERNAL_IP" >> $GITHUB_ENV
+
+      - name: Install curl
+        run: sudo apt-get install -y curl
+
+      - name: Check API Endpoint
+        run: |
+          API_URL="http://${{ env.EXTERNAL_IP }}/time"
+          echo "Testing API at $API_URL"
+          RESPONSE=$(curl -s $API_URL)
+          echo "API response: $RESPONSE"
+          if [[ $RESPONSE == *"current_time"* ]]; then
+            echo "API is up and running."
+            exit 0
+          else
+            echo "API check failed."
+            exit 1
+          fi
