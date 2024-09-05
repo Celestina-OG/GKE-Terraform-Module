@@ -21,8 +21,8 @@ Before you start, ensure you have the following installed on your local machine:
 Clone the GitHub repository to your local machine:
 
 ```bash
-git clone https://github.com/Celestina-OG/Terraform-GKE.git
-cd Terraform-GKE
+git clone https://github.com/Celestina-OG/GKE-Terraform-Module.git
+cd GKE-Terraform-Module
 ```
 
 ### 2. Set Up Google Cloud Credentials
